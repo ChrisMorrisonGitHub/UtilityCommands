@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,9 @@ namespace ImageConverter
         private static long filesConverted = 0;
         private static bool searchSystem = false;
         private static bool convertICOFiles = false;
-        private static bool printSummary = false;
+        private static bool _printSummary = false;
+        private static bool verbose = false;
+        private static DirectorySearcher ds;
 
         static void Main(string[] args)
         {
@@ -32,6 +35,7 @@ namespace ImageConverter
                 Console.WriteLine("{0} <search folder> [/S]\n", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
                 Console.WriteLine("  <search folder>");
                 Console.WriteLine("\tSpecifies the folder to search for images to convert.\n");
+                Console.WriteLine("  /V\tPrint additional information.\n");
                 Console.WriteLine("  /H\tInclude system and hidden files and folders.\n");
                 Console.WriteLine("  /I\tConvert Windows icon (.ico) files.\n");
                 Console.WriteLine("  /S\tPrint a summary when finished.\n");
@@ -48,7 +52,8 @@ namespace ImageConverter
             {
                 if (s.ToLower() == "/h") searchSystem = true;
                 if (s.ToLower() == "/i") convertICOFiles = true;
-                if (s.ToLower() == "/s") printSummary = true;
+                if (s.ToLower() == "/s") _printSummary = true;
+                if (s.ToLower() == "/v") verbose = true;
             }
 
             if (OLD_CODE)
@@ -79,24 +84,26 @@ namespace ImageConverter
                 }
 
 
-                if (printSummary == true) PrintSummary();
+                if (_printSummary == true) PrintSummary();
                 
             }
             else
             {
-                DirectorySearcher ds = new DirectorySearcher(args[0], SearchOption.AllDirectories, null);
+                ds = new DirectorySearcher(args[0], SearchOption.AllDirectories, null);
                 ds.FileFound += ds_FileFound;
                 ds.DirectoryFound += ds_DirectoryFound;
                 ds.SearchEnded += ds_SearchEnded;
                 ds.SearchError += ds_SearchError;
+                ds.EventMask = DirectorySearchEventMask.Files;
                 ds.StartSearch();
             }
         }
 
         private static void PrintSummary()
         {
-            Console.WriteLine("{0}------------------------------------------------", Console.Out.NewLine); // 9,223,372,036,854,775,807
-            Console.WriteLine("Files examined         " + String.Format("{0:n0}", filesExamined).PadLeft(25));
+            Console.WriteLine("{0}------------------------------------------------", Console.Out.NewLine);
+            Console.WriteLine("Directories searched   " + String.Format("{0:n0}", ds.DirectoriesSearched).PadLeft(25));
+            Console.WriteLine("Files examined         " + String.Format("{0:n0}", ds.FilesFound).PadLeft(25));
             Console.WriteLine("Files skipped          " + String.Format("{0:n0}", filesSkipped).PadLeft(25));
             Console.WriteLine("Files converted        " + String.Format("{0:n0}", filesConverted).PadLeft(25));
             Console.WriteLine("------------------------------------------------");
@@ -114,7 +121,7 @@ namespace ImageConverter
                     Environment.Exit(-1);
                     break;
                 case DirectrorySearchEndReason.Finished:
-                    if (printSummary == true) PrintSummary();
+                    if (_printSummary == true) PrintSummary();
                     Environment.Exit(0);
                     break;
             }
@@ -122,16 +129,15 @@ namespace ImageConverter
 
         static void ds_DirectoryFound(object sender, DirectoryFoundEventArgs e)
         {
-            Console.WriteLine("We have directory {0}", e.Directory.FullName);
+            
         }
 
         static void ds_FileFound(object sender, FileFoundEventArgs e)
         {
-            Console.WriteLine("We have file {0}", e.File.FullName);
-            return;
             string file = e.File.FullName;
             if ((searchSystem == false) && (FileUtilities.FileIsInHiddenOrSystemDirectory(file) == true))
             {
+                if (verbose == true) Console.WriteLine("Skipping '{0}' as it is in a system or hidden folder.", file);
                 filesSkipped++;
                 return;
             }
@@ -139,14 +145,18 @@ namespace ImageConverter
             {
                 filesConverted++;
                 filesExamined++;
-                Console.WriteLine("Successfully converted {0}", file);
+                Console.WriteLine("Successfully converted '{0}'", file);
+            }
+            else
+            {
+                if (verbose == true) Console.WriteLine("The file '{0}' was not converted.", file);
             }
             filesExamined++;
         }
 
         static void ds_SearchError(object sender, SearchErrorEventArgs e)
         {
-            Console.Error.WriteLine("Error: {0}", e.Error);
+            Console.Error.WriteLine("ERROR: Could not search '{0}' {1}", e.Directory, e.Error);
         }
     }
 }
