@@ -92,8 +92,8 @@ namespace ImageConverter
                 ds = new DirectorySearcher(args[0], SearchOption.AllDirectories, null);
                 ds.FileFound += ds_FileFound;
                 ds.DirectoryFound += ds_DirectoryFound;
-                ds.SearchEnded += ds_SearchEnded;
-                ds.SearchError += ds_SearchError;
+                ds.OperationEnded += ds_SearchEnded;
+                ds.OperationError += ds_SearchError;
                 ds.EventMask = DirectorySearchEventMask.Files;
                 ds.StartSearch();
             }
@@ -109,18 +109,18 @@ namespace ImageConverter
             Console.WriteLine("------------------------------------------------");
         }
 
-        static void ds_SearchEnded(object sender, SearchEndedEventArgs e)
+        static void ds_SearchEnded(object sender, OperationEndedEventArgs e)
         {
             switch (e.Reason)
             {
-                case DirectrorySearchEndReason.Cancelled:
+                case DirectroryOperationEndReason.Cancelled:
                     Console.WriteLine("Operation cancelled");
                     Environment.Exit(0);
                     break;
-                case DirectrorySearchEndReason.FatalError:
+                case DirectroryOperationEndReason.FatalError:
                     Environment.Exit(-1);
                     break;
-                case DirectrorySearchEndReason.Finished:
+                case DirectroryOperationEndReason.Finished:
                     if (_printSummary == true) PrintSummary();
                     Environment.Exit(0);
                     break;
@@ -154,7 +154,7 @@ namespace ImageConverter
             filesExamined++;
         }
 
-        static void ds_SearchError(object sender, SearchErrorEventArgs e)
+        static void ds_SearchError(object sender, OperationErrorEventArgs e)
         {
             Console.Error.WriteLine("ERROR: Could not search '{0}' {1}", e.Directory, e.Error);
         }
