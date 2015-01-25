@@ -95,7 +95,7 @@ namespace ImageConverter
                 ds.OperationEnded += ds_SearchEnded;
                 ds.OperationError += ds_SearchError;
                 ds.EventMask = DirectorySearchEventMask.Files;
-                ds.StartSearch();
+                ds.Start();
             }
         }
 
