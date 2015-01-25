@@ -106,7 +106,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CoreApplicationSupport\Windows\CoreApplicationSupport.csproj">
+    <ProjectReference Include="..\..\..\CoreApplicationSupport\dotNET\CoreApplicationSupport.csproj">
       <Project>{80074b8f-b425-4002-92e9-77ec13b469d9}</Project>
       <Name>CoreApplicationSupport</Name>
     </ProjectReference>

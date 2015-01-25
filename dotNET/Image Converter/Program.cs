@@ -25,7 +25,7 @@ namespace ImageConverter
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("Usage: {0} <search folder> [/S]", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
+                Console.Error.WriteLine("Usage: {0} <search folder> [/V] [/H] [/I] [/S]", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
                 Environment.Exit(-1);
                 return;
             }
@@ -56,47 +56,14 @@ namespace ImageConverter
                 if (s.ToLower() == "/v") verbose = true;
             }
 
-            if (OLD_CODE)
-            {
-                try
-                {
-                    foreach (string file in FileUtilities.GetDirectoryEntries(args[0], "*.*", SearchOption.AllDirectories, EntryFetchOptions.FilesOnly))
-                    {
-                        if ((searchSystem == false) && (FileUtilities.FileIsInHiddenOrSystemDirectory(file) == true))
-                        {
-                            filesSkipped++;
-                            continue;
-                        }
-                        if (ImageUtilities.ConvertFileToTIFF(file, convertICOFiles) == true)
-                        {
-                            filesConverted++;
-                            filesExamined++;
-                            Console.WriteLine("Successfully converted {0}", file);
-                        }
-                        filesExamined++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error: {0}", ex.Message);
-                    Environment.Exit(-1);
-                    return;
-                }
 
-
-                if (_printSummary == true) PrintSummary();
-                
-            }
-            else
-            {
-                ds = new DirectorySearcher(args[0], SearchOption.AllDirectories, null);
-                ds.FileFound += ds_FileFound;
-                ds.DirectoryFound += ds_DirectoryFound;
-                ds.OperationEnded += ds_SearchEnded;
-                ds.OperationError += ds_SearchError;
-                ds.EventMask = DirectorySearchEventMask.Files;
-                ds.Start();
-            }
+            ds = new DirectorySearcher(args[0], SearchOption.AllDirectories, null);
+            ds.FileFound += ds_FileFound;
+            ds.DirectoryFound += ds_DirectoryFound;
+            ds.OperationEnded += ds_SearchEnded;
+            ds.OperationError += ds_SearchError;
+            ds.EventMask = DirectorySearchEventMask.Files;
+            ds.Start();
         }
 
         private static void PrintSummary()
@@ -129,7 +96,7 @@ namespace ImageConverter
 
         static void ds_DirectoryFound(object sender, DirectoryFoundEventArgs e)
         {
-            
+
         }
 
         static void ds_FileFound(object sender, FileFoundEventArgs e)

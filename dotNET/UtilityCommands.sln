@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Image Converter", "Image Converter\Image Converter.csproj", "{1450C554-7BE7-4079-9434-A5A50FF406EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreApplicationSupport", "..\..\CoreApplicationSupport\Windows\CoreApplicationSupport.csproj", "{80074B8F-B425-4002-92E9-77EC13B469D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreApplicationSupport", "..\..\CoreApplicationSupport\dotNET\CoreApplicationSupport.csproj", "{80074B8F-B425-4002-92E9-77EC13B469D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
