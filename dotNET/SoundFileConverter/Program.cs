@@ -1,45 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using UniversalBinary.CoreApplicationSupport;
+using NAudio;
+using NAudio.Wave;
 
-namespace ImageConverter
+
+namespace SoundFileConverter
 {
     class Program
     {
-        const bool OLD_CODE = false;
         private static long filesSkipped = 0;
         private static long filesExamined = 0;
         private static long filesConverted = 0;
         private static bool searchSystem = false;
-        private static bool convertICOFiles = false;
         private static bool _printSummary = false;
         private static bool verbose = false;
-        private static bool _compress = false;
         private static DirectorySearcher ds;
 
         static void Main(string[] args)
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("Usage: {0} <search folder> [/V] [/H] [/I] [/C] [/S]", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
+                Console.Error.WriteLine("Usage: {0} <search folder> [/V] [/H] [/I] [/S]", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
                 Environment.Exit(-1);
                 return;
             }
             if ((args[0] == "/?") || (args[0] == "/h") || (args[0] == "/H"))
             {
                 Console.WriteLine("Searches the given folder for images and converts them to high-quality TIFF files.\n");
-                Console.WriteLine("{0} <search folder> [/V] [/H] [/I] [/C] [/S]\n", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
+                Console.WriteLine("{0} <search folder> [/S] [/H] [/I] [/S]\n", Path.GetFileNameWithoutExtension(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
                 Console.WriteLine("  <search folder>");
                 Console.WriteLine("\tSpecifies the folder to search for images to convert.\n");
                 Console.WriteLine("  /V\tPrint additional information.\n");
                 Console.WriteLine("  /H\tInclude system and hidden files and folders.\n");
-                Console.WriteLine("  /I\tConvert Windows icon (.ico) files.\n");
-                Console.WriteLine("  /C\tApply lossless compression to the converted Image\n");
                 Console.WriteLine("  /S\tPrint a summary when finished.\n");
                 Environment.Exit(0);
             }
@@ -53,8 +50,6 @@ namespace ImageConverter
             foreach (string s in args)
             {
                 if (s.ToLower() == "/h") searchSystem = true;
-                if (s.ToLower() == "/i") convertICOFiles = true;
-                if (s.ToLower() == "/c") _compress = true;
                 if (s.ToLower() == "/s") _printSummary = true;
                 if (s.ToLower() == "/v") verbose = true;
             }
@@ -111,7 +106,7 @@ namespace ImageConverter
                 filesSkipped++;
                 return;
             }
-            if (ImageUtilities.ConvertFileToTIFF(file, convertICOFiles, _compress) == true)
+            if (ConvertSoundFile(file) == true)
             {
                 filesConverted++;
                 filesExamined++;
@@ -122,6 +117,44 @@ namespace ImageConverter
                 if (verbose == true) Console.WriteLine("The file '{0}' was not converted.", file);
             }
             filesExamined++;
+        }
+
+        private static bool ConvertSoundFile(string inFile)
+        {
+            string outFileStub = Path.GetFileNameWithoutExtension(inFile);
+            string outFile = outFileStub + ".wav";
+            Random rnd = new Random();
+            AudioFileReader audioReader = null;
+
+            try
+            {
+                audioReader = new AudioFileReader(inFile);
+                if (File.Exists(outFile) == true)
+                {
+                    if (FileUtilities.FileAndStreamAreIdentical(outFile, audioReader) == true)
+                    {
+                        audioReader.Close();
+                        return false;
+                    }
+                    else
+                    {
+                        outFile = outFileStub + rnd.Next(0, 10000).ToString("D5") + ".wav";
+                    }
+                }
+                WaveFormat outFormat = new WaveFormat(48000, 32, 2);
+                MediaFoundationResampler resampler = new MediaFoundationResampler(audioReader, outFormat);
+                resampler.ResamplerQuality = 60;
+                WaveFileWriter.CreateWaveFile(outFile, resampler);
+                audioReader.Close();
+            }
+            catch
+            {
+                if (audioReader != null) audioReader.Close();
+                return false;
+            }
+
+            File.Delete(inFile);
+            return true;
         }
 
         static void ds_SearchError(object sender, OperationErrorEventArgs e)
