@@ -1,0 +1,12 @@
+﻿<Properties StartupItem="Image Converter/Image Converter.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../CoreApplicationSupport/dotNET/DirectoryDuplicator.cs">
+    <Files>
+      <File FileName="../../CoreApplicationSupport/dotNET/DirectoryDuplicator.cs" Line="24" Column="24" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
